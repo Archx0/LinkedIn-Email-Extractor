@@ -29,6 +29,7 @@ class GetEmail:
             last_names[i] = re.sub(r"\b-?\s*bin\w*\s*|\s*-\s*", "", last_names[i], flags=re.IGNORECASE)
             last_names[i] = re.sub(r"al ", "al", last_names[i]).strip()
             last_names[i] = re.sub(r"[^a-zA-Z\s]", "", last_names[i])
+            # first_names[i] = re.sub(r"[A-Z]", lambda match: match.group(0).lower(), first_names[i])
 
         with open("first_name.txt", "w") as first_names_file:
             first_names_file.write("".join(f"{first_names}\n"))
@@ -43,9 +44,9 @@ class GetEmail:
                 try:
                     if first_names[i] and last_names[i]:
                         if len(last_names[i].split()) >= 2:
-                            makeEmail.write("".join(f"{first_names[i][1]}.{''.join(last_names[i].split()[1:2])}@{mailSyntax}\n"))
+                            makeEmail.write("".join(f"{first_names[i][0]}.{''.join(last_names[i].split()[1:2])}@{mailSyntax}\n"))
                         else:
-                            makeEmail.write("".join(f"{first_names[i][1]}.{last_names[i]}@{mailSyntax} \n"))
+                            makeEmail.write("".join(f"{first_names[i][0]}.{last_names[i]}@{mailSyntax} \n"))
                     else:
                         continue
                 except:
@@ -55,11 +56,12 @@ class GetEmail:
         with open('name_and_emails.txt','w') as makeEmailAndName:
             for i in range(len(first_names)):
                 try:
+                    
                     if first_names[i] and last_names[i]:
                         if len(last_names[i].split()) >= 2:
-                            makeEmailAndName.write(f"{first_names[i]} {last_names[i]}: "+"".join(f"{first_names[i][1]}.{''.join(last_names[i].split()[1:2])}@{mailSyntax}\n"))
+                            makeEmailAndName.write(f"{last_names[i]}: "+"".join(f"{first_names[i][0]}.{''.join(last_names[i].split()[1:2])}@{mailSyntax}\n"))
                         else:
-                            makeEmailAndName.write(f"{first_names[i]} {last_names[i]}: "+"".join(f"{first_names[i][1]}.{last_names[i]}@{mailSyntax} \n"))
+                            makeEmailAndName.write(f"{last_names[i]}: "+"".join(f"{first_names[i][0]}.{last_names[i]}@{mailSyntax} \n"))
                     else:
                         continue
                 except:
