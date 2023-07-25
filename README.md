@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-  <title>Email Generator</title>
-</head>
-
 <body>
   <h1>Email Generator</h1>
 
