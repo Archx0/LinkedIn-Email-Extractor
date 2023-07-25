@@ -2,59 +2,81 @@
 import re
 import os
 from time import sleep
-class GetEmail:
+class GetEmail: 
+    
     def getEmailFromIndex(self,filename):
         with open(filename, 'r') as file:
             print("===> get names")  
             return "\n".join(re.findall('div id=".*?" style="" class="ember-view lt-line-clamp lt-line-clamp--single-line org-people-profile-card__profile-title t-black">\n(.*)',file.read())).replace("      ","")
             
-    def CleanNames(self , filename,mailSyntax):
-        names = self.getEmailFromIndex(filename)
-        with open("names.txt",'w') as fileName:
-            fileName.write(names)
-        fileName.close()    
-        os.system("cat names.txt | cut -d \" \" -f1 > firstName.txt")
-        os.system("cat names.txt |cut -d \" \" -f2,3,3,4 > Last.txt")
-        print("===> make first and last name")  
-        sleep(.5)
-        oldLastname = open("Last.txt","r").readlines()
-        newLastName = open("newLastName.txt","w")
+    def CleanNames(self, filename, mailSyntax):
         
-        print("===> clean names ")  
-        for i in range(len(oldLastname)):
-            if(len(oldLastname[i]) <= 3):
-                L = oldLastname[i][3:].replace(',','').replace(',','').replace("\n","").replace("'","").replace("-","").replace("bin","").replace("Bin","").replace("AL ","Al").replace("Al ","Al").replace("Ba ","ba").replace("ba ","ba").replace("Abo ","abo").replace("abo ","abo")
-                newLastName.write(f"{L}\n")
-            else:
-                if("." in oldLastname[i]):
-                    L = oldLastname[i][3:].replace(',','').replace(',','').replace("\n","").replace("'","").replace("-","").replace("bin","").replace("Bin","").replace("AL ","Al").replace("Al ","Al").replace("Ba ","ba").replace("ba ","ba").replace("Abo ","abo").replace("abo ","abo")
-                    newLastName.write(f"{L}\n")
-                else:
-                    L = oldLastname[i].replace(',','').replace(',','').replace("\n","").replace("'","").replace("-","").replace("bin","").replace("Bin","").replace("AL ","Al").replace("Al ","Al").replace("Ba ","ba").replace("ba ","ba").replace("Abo ","abo").replace("abo ","abo")
-                    newLastName.write(f"{L}\n") 
-        os.system("rm -rf lastname.txt && cat newLastName.txt | cut -d \" \" -f1 > lastname.txt")                               
-        sleep(1)  
-           
+        names = self.getEmailFromIndex(filename)
+        
+        with open("names.txt", "w") as write_all_names:
+            write_all_names.write(names)
+        write_all_names.close()
+        with open("names.txt", "r") as read_all_name:
+            full_names = read_all_name.read().splitlines()
+            first_names = [name.split()[0] for name in full_names]
+            last_names = [re.split(r"\s+", name, maxsplit=1)[1] for name in full_names]
+       
 
-    def makeMail(self,mailSyntax):            
-            print("===> create mails ...")
-            firstName = open("firstName.txt",'r').readlines()
-            lastName = open('lastname.txt','r') .readlines()
-            with open("Emails.txt",'w')as Emails:
-                for i in range(len(firstName)):
-                    first = firstName[i][0].replace(" ","").replace("\n","") ########## ====> first char in first name
-                    last = lastName[i].replace(" ","").replace("\n","")      ########## ====> Last name
-                    Emails.write(f"{first}.{last}@{mailSyntax}\n")  
-            Emails.close()
-            self.cleanUp()        
-    def cleanUp(self):
-        os.popen("rm -rf newLastName.txt Last.txt firstName.txt firstName.txt Last.txt names.txt lastname.txt ")    
-        print("===> clean file")            
+        for i in range(len(last_names)):
+            last_names[i] = re.sub(r"[A-Z]+®|™+[a-zA-Z]|[a-zA-Z]+™|®+[a-zA-Z]", "", last_names[i],flags=re.IGNORECASE).strip()
+            last_names[i] = re.sub(r"\s*,.*|\s-.*", "", last_names[i]).strip()
+            last_names[i] = re.sub(r"[A-Z]", lambda match: match.group(0).lower(), last_names[i])
+            last_names[i] = re.sub(r"\b-?\s*bin\w*\s*|\s*-\s*", "", last_names[i], flags=re.IGNORECASE)
+            last_names[i] = re.sub(r"al ", "al", last_names[i]).strip()
+            last_names[i] = re.sub(r"[^a-zA-Z\s]", "", last_names[i])
+
+        with open("first_name.txt", "w") as first_names_file:
+            first_names_file.write("".join(f"{first_names}\n"))
+        first_names_file.close()
+        
+        with open("last_name.txt", "w") as last_names_file:
+            last_names_file.write("".join(f"{last_names}\n"))
+        last_names_file.close()
+        
+        with open('emails.txt','w') as makeEmail:
+            for i in range(len(first_names)):
+                try:
+                    if first_names[i] and last_names[i]:
+                        if len(last_names[i].split()) >= 2:
+                            makeEmail.write("".join(f"{first_names[i][1]}.{''.join(last_names[i].split()[1:2])}@{mailSyntax}\n"))
+                        else:
+                            makeEmail.write("".join(f"{first_names[i][1]}.{last_names[i]}@{mailSyntax} \n"))
+                    else:
+                        continue
+                except:
+                    print("Error ..")        
+        makeEmail.close()
+        
+        with open('name_and_emails.txt','w') as makeEmailAndName:
+            for i in range(len(first_names)):
+                try:
+                    if first_names[i] and last_names[i]:
+                        if len(last_names[i].split()) >= 2:
+                            makeEmailAndName.write(f"{first_names[i]} {last_names[i]}: "+"".join(f"{first_names[i][1]}.{''.join(last_names[i].split()[1:2])}@{mailSyntax}\n"))
+                        else:
+                            makeEmailAndName.write(f"{first_names[i]} {last_names[i]}: "+"".join(f"{first_names[i][1]}.{last_names[i]}@{mailSyntax} \n"))
+                    else:
+                        continue
+                except:
+                    print("Error ..")        
+        makeEmailAndName.close()
+        print('email was seve it => on emails.txt')
+        self.cleanName()
+        
+    def cleanName(self):
+        os.remove("names.txt")
+        os.remove("last_name.txt")
+        os.remove("first_name.txt")     
+       
 def main():
-    email = "test.com"
+    email = input("write Email domain Ex test.com: ")
     start = GetEmail()
     start.CleanNames("index.html",email)  
-    os.system("cat newLastName.txt | cut -d \" \" -f1 > lastname.txt")          
-    start.makeMail(email) 
+
 if "__main__" == __name__:
     main()
