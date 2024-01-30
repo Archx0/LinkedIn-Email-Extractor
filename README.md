@@ -18,7 +18,7 @@
 
   <p>Next, run the script:</p>
 
-  <pre><code>python3 Emails.py</code></pre>
+  <pre><code>python3 getEmail.py</code></pre>
   <img src="img/run_script.png" width="950px">
 
   <p>The script will generate two files: <code>email.txt</code> and <code>name_and_email.txt</code>.</p>
